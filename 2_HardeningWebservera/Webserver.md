@@ -1,6 +1,6 @@
 # Hardening webového servera
 
-Webový server nainštalujeme na Debiane 10 s ip adresou 192.168.0.1. Cieľom je rozbehať wordpress.
+Webový server nainštalujeme na Debiane 10 s ip adresou 192.168.0.1. Cieľom je rozbehať funkčný Wordpress.
 Najprv nainštalujeme apache2. 
 
 ```
@@ -13,16 +13,21 @@ Keďže sme v prvom zadaní konfigurovali ufw (firewall), skontrolujeme či mám
 ufw app info "WWW Full"
 ```
 
-Povolíme prichádzanie HTTP a HTTPS: 
+Ak nie, povolíme prichádzajúce spojenia HTTP a HTTPS: 
 
 ```
 ufw allow in "WWW Full"
 ```
 
-Nainštalujeme databázu MariaDB a vytvoríme defaultného používateľa: 
+Nainštalujeme databázu MariaDB: 
 
 ```
 apt install mariadb-server
+```
+
+Zmeníme niektoré z menej bezpečných predvolených možností. Zablokujeme vzdialené rootovské prihlásenia a odstránime nepoužitých používateľov databázy.
+
+```
 mysql_secure_installation
 ```
 
@@ -30,7 +35,6 @@ Nainštalujeme php a reštartujeme apache2:
 
 ```
 apt install php-curl php-gd php-intl php-mbstring php-soap php-xml php-xmlrpc php-zip
-php -v
 systemctl restart apache2
 ```
 
@@ -65,22 +69,22 @@ Vložíme doň:
 
 ```
 <VirtualHost *:80>        
-               ServerAdmin webmaster@localhost
-               ServerName domena.sk
-                    DocumentRoot /var/www/domenask
-                   <Directory />
-                       Options FollowSymLinks
-                       AllowOverride None
-              </Directory>
-                 <Directory /var/www/domenask/>
-                              Options Indexes FollowSymLinks MultiViews
-                              AllowOverride None
-                              Order allow,deny
-                              allow from all
-                   </Directory> 
-                   ErrorLog ${APACHE_LOG_DIR}/error.log 
-                   LogLevel warn
-                   CustomLog ${APACHE_LOG_DIR}/access.log combined
+        ServerAdmin webmaster@localhost
+        ServerName domena.sk
+        DocumentRoot /var/www/domenask
+        <Directory />
+           Options FollowSymLinks
+           AllowOverride None
+        </Directory>
+        <Directory /var/www/domenask/>
+           Options Indexes FollowSymLinks MultiViews
+           AllowOverride None
+           Order allow,deny
+           allow from all
+         </Directory> 
+         ErrorLog ${APACHE_LOG_DIR}/error.log 
+         LogLevel warn
+         CustomLog ${APACHE_LOG_DIR}/access.log combined
 </VirtualHost>
 ```
 
@@ -91,4 +95,4 @@ a2ensite domena.sk
 systemctl restart apache2
 ```
 
-Ešte je potrebné otvoriť súbor `/etc/hosts` a pridáme doň `192.168.0.1	domena.sk`
+Ešte je potrebné otvoriť súbor `/etc/hosts` a pridať doň `192.168.0.1	domena.sk`
